@@ -4,7 +4,8 @@
 
 لعبة داما (Drafts) تفاعلية مبنية بالكامل باستخدام تقنيات الويب الحديثة (HTML, CSS, JavaScript) مع واجهة مستخدم متجاوبة وعصرية باستخدام **Bootstrap 5**. تدعم اللعبة نمطين للعب: التحدي ضد الذكاء الاصطناعي (AI)، أو اللعب المباشر مع الأصدقاء أونلاين عبر غرف خاصة باستخدام **Socket.io**.
 
-![Dama Game Preview](https://via.placeholder.com/800x400.png?text=Professional+Dama+Game+-+Gameplay+Preview) <!-- يمكنك استبدال هذا الرابط بصورة فعلية للعبتك -->
+ <img width="720" height="1320" alt="dama1" src="https://github.com/user-attachments/assets/d6a2579e-a0cb-41bd-8b8a-117a8a8e706a" />
+
 
 ## ✨ المميزات (Features)
 
@@ -47,3 +48,7 @@
    npm install express socket.io
    ```
    رابط اللعبة 🎮 
+https://wazefapress.github.io/Professional-Checkers/
+
+أو
+https://dama.haythamzeidan.workers.dev/
