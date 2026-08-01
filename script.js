@@ -113,8 +113,13 @@ function handleCellClick(r, c) {
             playSound(moveSound);
             checkWin();
 
-            if (gameMode === 'online') {
-                socket.emit('makeMove', { room: roomCode, board: board, turn: myColor === 'white' ? 'black' : 'white' });
+          if (gameMode === 'online') {
+                // نغير الدور محلياً أولاً
+                currentPlayer = myColor === 'white' ? 'black' : 'white';
+                updateStatus(); // تحديث الواجهة فوراً
+                
+                // نرسل الدور الجديد للخصم
+                socket.emit('makeMove', { room: roomCode, board: board, turn: currentPlayer });
             } else {
                 currentPlayer = 'black';
                 updateStatus();
@@ -180,8 +185,15 @@ function checkWin() {
 }
 
 function updateStatus() {
-    statusMessage.innerText = currentPlayer === myColor ? "دورك الآن!" : "انتظر دور الخصم...";
-    statusMessage.className = currentPlayer === myColor ? "alert alert-success text-center fw-bold fs-5" : "alert alert-warning text-center fw-bold fs-5";
+    if (gameMode === 'online') {
+        // في وضع الأونلاين، نقارن دور اللاعب الحالي بلونه في هذه الجلسة
+        statusMessage.innerText = currentPlayer === myColor ? "دورك الآن! (أنت " + (myColor === 'white' ? 'الأبيض' : 'الأسود') + ")" : "انتظر دور الخصم...";
+        statusMessage.className = currentPlayer === myColor ? "alert alert-success text-center fw-bold fs-5" : "alert alert-warning text-center fw-bold fs-5";
+    } else {
+        // وضع الذكاء الاصطناعي
+        statusMessage.innerText = currentPlayer === 'white' ? "دورك الآن!" : "يفكر الذكاء الاصطناعي...";
+        statusMessage.className = currentPlayer === 'white' ? "alert alert-success text-center fw-bold fs-5" : "alert alert-warning text-center fw-bold fs-5";
+    }
 }
 
 // ==========================================
@@ -248,8 +260,11 @@ function initSocket() {
         });
 
         socket.on('gameStarted', () => {
-            initBoard();
-            Swal.fire('بدأت اللعبة!', 'انضم الخصم بنجاح', 'success');
+            // عند بدء اللعبة، اللاعب الأبيض هو من يبدأ دائماً
+            currentPlayer = 'white';
+            initBoard(); // إعادة رسم الرقعة
+            updateStatus(); // تحديث رسالة الدور (هنا التعديل الأهم)
+            Swal.fire('بدأت اللعبة!', 'انضم الخصم بنجاح، اللاعب الأبيض يبدأ اللعب.', 'success');
         });
 
         socket.on('updateBoard', (data) => {
