@@ -1,6 +1,6 @@
 self.addEventListener('install', (e) => {
     e.waitUntil(
-        caches.open('iptv-cache-v1').then((cache) => {
+        caches.open('dama-cache-v1').then((cache) => {
             return cache.addAll([
                 './index.html',
                 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css',
