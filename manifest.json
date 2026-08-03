@@ -1,22 +1,26 @@
 {
-  "name": "لعبة الداما الاحترافية",
   "short_name": "الداما",
-  "description": "لعبة الداما التركية/العربية بقوانين الأغلبية واللعب الجماعي",
-  "start_url": "/index.html",
-  "display": "standalone",
-  "background_color": "#212529",
-  "theme_color": "#0d6efd",
-  "orientation": "portrait",
+  "name": "لعبة الداما الاحترافية",
+  "description": "لعبة الداما التركية والعربية الرسمية أونلاين",
   "icons": [
     {
       "src": "dama192.png",
+      "type": "image/png",
       "sizes": "192x192",
-      "type": "image/png"
+      "purpose": "any maskable"
     },
     {
       "src": "dama512.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "type": "image/png"
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": "./index.html",
+  "id": "./",
+  "background_color": "#3e2723",
+  "theme_color": "#3e2723",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "./"
 }
