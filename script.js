@@ -499,8 +499,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const createBtn = document.getElementById('createRoomBtn');
-    if (createBtn) createBtn.addEventListener('click', () => socket && socket.emit('createRoom'));
+    // ==========================================
+// إنشاء غرفة جديدة مع تنبيه السيرفر والاستجابة
+// ==========================================
+const createBtn = document.getElementById('createRoomBtn');
+if (createBtn) {
+    createBtn.addEventListener('click', () => {
+        if (!socket || !socket.connected) {
+            Swal.fire({
+                icon: 'error',
+                title: 'غير متصل بالخادم',
+                text: 'جاري الاتصال بالخادم، يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.',
+                confirmButtonText: 'حسناً'
+            });
+            return;
+        }
+
+        // 1. إظهار رسالة تنبيه تفاعلية تفيد ببدء إنشاء الغرفة وتنبيه حالة السبات
+        Swal.fire({
+            title: 'جاري إنشاء الغرفة...',
+            html: `
+                <p class="mb-2">جاري التواصل مع الخادم لتجهيز طاولتك.</p>
+                <small class="text-muted d-block">
+                    <i class="fas fa-info-circle me-1"></i> 
+                    ملاحظة: إذا كان الخادم في حالة سبات، قد يستغرق الاتصال من 15 إلى 30 ثانية لأول مرة.
+                </small>
+            `,
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading(); // إظهار مؤشر الدوران
+            }
+        });
+
+        // 2. إرسال طلب إنشاء الغرفة إلى الخادم
+        socket.emit('createRoom');
+    });
+}
 
     const joinBtn = document.getElementById('joinRoomBtn');
     if (joinBtn) joinBtn.addEventListener('click', () => {
@@ -590,14 +625,28 @@ function initSocket() {
     if(!socket) {
         socket = io(SERVER_URL);
         
-        socket.on('roomCreated', (code) => {
-            roomCode = code; myColor = 'white';
-            const display = document.getElementById('displayRoomCode');
-            const info = document.getElementById('roomInfo');
-            if (display) display.innerText = code;
-            if (info) info.classList.remove('d-none');
-            if (statusMessage) statusMessage.innerText = "في انتظار انضمام الخصم...";
-        });
+        // عند استقبال كود الغرفة الجديدة من الخادم
+socket.on('roomCreated', (code) => {
+    roomCode = code;
+    myColor = 'white';
+    
+    // إظهار عناصر كود الغرفة ورابط المشاركة في الواجهة
+    const roomInfo = document.getElementById('roomInfo');
+    const roomCodeDisplay = document.getElementById('roomCodeDisplay');
+    
+    if (roomInfo) roomInfo.classList.remove('d-none');
+    if (roomCodeDisplay) roomCodeDisplay.textContent = roomCode;
+
+    // إغلاق مؤشر التحميل وإظهار تنبيه بنجاح إنشاء الغرفة
+    Swal.fire({
+        icon: 'success',
+        title: 'تم إنشاء الغرفة بنجاح! 🎉',
+        html: `رمز الغرفة الخاص بك هو: <b class="text-primary fs-4">${roomCode}</b><br><small class="text-muted">شاركه مع صديقك للانضمام فوراً.</small>`,
+        confirmButtonText: 'حسناً',
+        timer: 4000,
+        timerProgressBar: true
+    });
+});
 
         socket.on('gameStarted', () => {
             currentPlayer = 'white'; initBoard(); updateStatus(); 
