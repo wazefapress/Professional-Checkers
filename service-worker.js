@@ -1,21 +1,57 @@
-self.addEventListener('install', (e) => {
-    e.waitUntil(
-        caches.open('dama-cache-v1').then((cache) => {
-            return cache.addAll([
-                './index.html',
-                'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css',
-                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css',
-                'https://cdn.jsdelivr.net/npm/hls.js@latest',
-                'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js'
-            ]);
-        })
-    );
+const CACHE_NAME = 'dama-v1';
+const ASSETS_TO_CACHE = [
+  './',
+  './index.html',
+  './style.css',
+  './script.js',
+  './manifest.json',
+  './dama192.png',
+  './dama512.png'
+];
+
+// 1. تثبيت الـ Service Worker وتخزين الملفات
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('جاري تخزين ملفات اللعبة في الكاش...');
+      return cache.addAll(ASSETS_TO_CACHE);
+    }).then(() => self.skipWaiting()) // التفعيل الفوري
+  );
 });
 
-self.addEventListener('fetch', (e) => {
-    e.respondWith(
-        caches.match(e.request).then((cachedResponse) => {
-            return cachedResponse || fetch(e.request);
+// 2. تنظيف الكاش القديم عند التحديث
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
         })
-    );
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// 3. معالجة الطلبات: تجربة الشبكة أولاً، وإن تعذرت يتم الجلب من الكاش
+self.addEventListener('fetch', (event) => {
+  // تجاهل طلبات Socket.io أو السيرفر الخارجي حتى لا تتعطل الاتصالات اللحظية
+  if (event.request.url.includes('socket.io') || event.request.url.includes('onrender.com')) {
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match(event.request).then((response) => {
+        if (response) {
+          return response;
+        }
+        // في حال عدم وجود الملف في الكاش وكان الطلب لصفحة، يتم إرجاع index.html
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
+    })
+  );
 });
